@@ -746,8 +746,15 @@
 
     document.querySelectorAll('.feature-card, .team-card').forEach(el => cardObserver.observe(el));
 
+    // ─── APK link: lokal pakai file relatif, live pakai GitHub Releases ─
+    const apkBtn = document.getElementById('apk-btn');
+    const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+    if (!isLocal) {
+      apkBtn.href = 'https://github.com/CristianPhi/Daurin-Webstie/releases/latest/download/daurin.apk';
+    }
+
     // ─── APK button click feedback ────────────────────────────────
-    document.getElementById('apk-btn').addEventListener('click', function() {
+    apkBtn.addEventListener('click', function() {
       const original = this.innerHTML;
       this.textContent = '✓ Download dimulai…';
       this.style.background = 'linear-gradient(135deg,#7DC74A,#A8E063)';

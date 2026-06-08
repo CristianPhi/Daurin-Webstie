@@ -1,29 +1,45 @@
 # Daurin Website
 
-Landing page statis untuk project Daurin — terpisah dari GenshinImport.
+Landing page statis untuk project Daurin.
+
+**Live site:** https://cristianphi.github.io/Daurin-Webstie/
 
 ## Struktur
 
 ```
 Daurin-Website/
-├── index.html          ← halaman utama
-├── downloads/
-│   └── daurin.apk      ← taruh APK di sini
-└── README.md
+├── index.html
+├── downloads/daurin.apk
+└── .github/workflows/deploy-pages.yml
 ```
 
-## Cara link download (Chrome langsung download)
+## Deploy (GitHub Pages)
 
-Tombol **Download APK** di `index.html` sudah di-set ke:
+1. Push semua file ke repo `CristianPhi/Daurin-Webstie`
+2. Buka **Settings → Pages**
+3. **Build and deployment → Source:** pilih **GitHub Actions**
+4. Tunggu workflow **Deploy GitHub Pages** selesai (tab Actions)
+5. Buka https://cristianphi.github.io/Daurin-Webstie/
 
-```html
-<a href="downloads/daurin.apk" download="Daurin.apk">Download APK</a>
+## Download APK (penting!)
+
+Tombol download pakai **GitHub Releases** (lebih stabil untuk file ~54 MB):
+
+```
+https://github.com/CristianPhi/Daurin-Webstie/releases/latest/download/daurin.apk
 ```
 
-Yang perlu kamu lakukan:
-1. Build APK dari Flutter (`flutter build apk --release`)
-2. Copy ke `downloads/daurin.apk`
-3. Host folder ini di server (jangan buka lewat `file://`)
+### Buat release (sekali saja, ulangi tiap update APK)
+
+1. Buka https://github.com/CristianPhi/Daurin-Webstie/releases
+2. Klik **Create a new release**
+3. Tag: `v1.0` (atau v1.1, v1.2, dst.)
+4. Title: `Daurin v1.0`
+5. Drag & drop `downloads/daurin.apk` ke **Release assets**
+6. Pastikan nama file asset = **`daurin.apk`**
+7. Klik **Publish release**
+
+Tanpa release ini, tombol download di website live **tidak akan jalan**.
 
 ## Tes lokal
 
@@ -32,22 +48,4 @@ cd "c:\Cristian Philander\Binus\Semester 4\Mobile Hybrid Solution\Daurin-Website
 npx --yes serve .
 ```
 
-Buka http://localhost:3000 → klik **Download APK**.
-
-## Hosting gratis
-
-| Platform | Cara |
-|----------|------|
-| **Netlify** | Drag & drop folder `Daurin-Website` ke netlify.com |
-| **GitHub Pages** | Push repo, aktifkan Pages di Settings |
-| **Vercel** | Import/upload folder, deploy |
-
-Upload seluruh isi folder (termasuk `downloads/daurin.apk`).
-
-## Ganti file download
-
-Edit `href` dan `download` di tombol `#apk-btn` di `index.html`:
-
-```html
-<a href="downloads/nama-file.apk" download="NamaTampilan.apk" ...>
-```
+Untuk tes lokal, ganti sementara `href` tombol ke `downloads/daurin.apk`.
