@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daurin  Eco Marketplace</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- GSAP + ScrollTrigger -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            forest:    '#243D14',
+            canopy:    '#2F5019',
+            olive:     '#3C6424',
+            sage:      '#527D37',
+            lime:      '#7DC74A',
+            limelight: '#A8E063',
+            cardboard: '#C4935A',
+            kraft:     '#D4B896',
+            parchment: '#F4EDE0',
+            cream:     '#FAF7F2',
+          },
+          fontFamily: {
+            brand: ['Nunito', 'sans-serif'],
+            body:  ['DM Sans', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* ─── Reset & Base ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: #243D14;
+      color: #FAF7F2;
+      overflow-x: hidden;
+    }
+
+    /* ─── Noise Texture Overlay ─────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+    }
+
+    /* ─── Scrollbar ─────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #243D14; }
+    ::-webkit-scrollbar-thumb { background: #527D37; border-radius: 3px; }
+
+    /* ─── Nav ───────────────────────────────────────────────────── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 1rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: background 0.4s ease, backdrop-filter 0.4s ease;
+    }
+    #nav.scrolled {
+      background: rgba(36, 61, 20, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(124, 199, 74, 0.15);
+    }
+    .nav-logo { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.4rem;
+      color: #A8E063; letter-spacing: -0.02em; }
+    .nav-link { font-size: 0.9rem; font-weight: 500; color: #D4B896;
+      text-decoration: none; transition: color 0.2s; }
+    .nav-link:hover { color: #A8E063; }
+
+    /* ─── Hero ──────────────────────────────────────────────────── */
+    #hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    /* Radial glow behind hero */
+    #hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 55%, rgba(60,100,36,0.55) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Leaf particles */
+    .leaf {
+      position: absolute;
+      width: 10px; height: 10px;
+      border-radius: 50% 0;
+      opacity: 0;
+      animation: drift linear infinite;
+    }
+    @keyframes drift {
+      0%   { transform: translateY(110vh) rotate(0deg);   opacity: 0; }
+      10%  { opacity: 0.4; }
+      90%  { opacity: 0.2; }
+      100% { transform: translateY(-10vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Hero content */
+    #hero-content {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; padding: 2rem;
+    }
+    .hero-logo {
+      width: clamp(160px, 30vw, 260px);
+      height: clamp(160px, 30vw, 260px);
+      border-radius: 28%;
+      object-fit: cover;
+      box-shadow: 0 0 60px rgba(124,199,74,0.25), 0 30px 60px rgba(0,0,0,0.4);
+      animation: logo-float 6s ease-in-out infinite;
+    }
+    @keyframes logo-float {
+      0%, 100% { transform: translateY(0px);  }
+      50%       { transform: translateY(-14px); }
+    }
+    .hero-title {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: clamp(3.5rem, 12vw, 8rem);
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-top: 1.25rem;
+      background: linear-gradient(135deg, #A8E063 0%, #7DC74A 40%, #C4935A 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-tagline {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      font-weight: 300;
+      color: #D4B896;
+      margin-top: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .hero-cta {
+      margin-top: 2.5rem;
+      display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;
+    }
+    .btn-primary {
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      padding: 0.85rem 2.2rem; border-radius: 100px;
+      background: linear-gradient(135deg, #7DC74A, #A8E063);
+      color: #1A2E0D; font-size: 1rem;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(124,199,74,0.35);
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none; cursor: pointer;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 32px rgba(124,199,74,0.45);
+    }
+    .btn-outline {
+      font-family: 'Nunito', sans-serif; font-weight: 700;
+      padding: 0.85rem 2.2rem; border-radius: 100px;
+      border: 2px solid rgba(212,184,150,0.4);
+      color: #D4B896; font-size: 1rem;
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      background: transparent;
+      cursor: pointer;
+    }
+    .btn-outline:hover {
+      border-color: #D4B896;
+      background: rgba(212,184,150,0.08);
+      color: #FAF7F2;
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      color: rgba(212,184,150,0.5); font-size: 0.7rem; letter-spacing: 0.1em;
+      text-transform: uppercase; animation: pulse-fade 2.5s ease-in-out infinite;
+    }
+    .scroll-indicator svg { animation: bounce 2.5s ease-in-out infinite; }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(6px); }
+    }
+    @keyframes pulse-fade {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; }
+    }
+
+    /* ─── Section: Features ─────────────────────────────────────── */
+    #features {
+      position: relative; z-index: 1;
+      padding: clamp(5rem, 10vw, 9rem) clamp(1.5rem, 5vw, 5rem);
+      background: linear-gradient(180deg, #243D14 0%, #1E3410 100%);
+    }
+    .section-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #7DC74A; margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: 'Nunito', sans-serif; font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      line-height: 1.1; letter-spacing: -0.03em;
+      color: #FAF7F2;
+    }
+    .section-title span { color: #A8E063; }
+
+    .feature-card {
+      background: rgba(60, 100, 36, 0.25);
+      border: 1px solid rgba(124,199,74,0.12);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      opacity: 0; transform: translateY(30px);
+    }
+    .feature-card.visible {
+      opacity: 1; transform: translateY(0);
+      transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.3s, box-shadow 0.3s;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(124,199,74,0.3);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    .feature-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.25rem;
+    }
+    .feature-card h3 {
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: 1.15rem; margin-bottom: 0.5rem; color: #FAF7F2;
+    }
+    .feature-card p {
+      font-size: 0.92rem; line-height: 1.65; color: rgba(244,237,224,0.65);
+    }
+
+    /* Divider wave */
+    .wave-divider { display: block; width: 100%; overflow: hidden; line-height: 0; }
+    .wave-divider svg { display: block; width: 100%; }
+
+    /* ─── Section: Team ─────────────────────────────────────────── */
+    #team {
+      position: relative; z-index: 1;
+      padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 5vw, 5rem);
+      background: #1E3410;
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.75rem;
+      margin-top: 3.5rem;
+    }
+    .team-card {
+      background: linear-gradient(145deg, rgba(47,80,25,0.6) 0%, rgba(36,61,20,0.8) 100%);
+      border: 1px solid rgba(196,147,90,0.18);
+      border-radius: 24px;
+      overflow: hidden;
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .team-card.visible {
+      opacity: 1; transform: translateY(0);
+    }
+    .team-card:hover .team-photo-wrap { transform: scale(1.03); }
+    .team-photo-wrap {
+      width: 100%; aspect-ratio: 1;
+      overflow: hidden; transition: transform 0.4s ease;
+      background: linear-gradient(145deg, rgba(60,100,36,0.4), rgba(196,147,90,0.2));
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .team-photo-wrap .initials {
+      font-family: 'Nunito', sans-serif; font-weight: 900;
+      font-size: 3rem; color: rgba(168,224,99,0.6);
+      user-select: none;
+    }
+    .team-photo-wrap::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 60%, rgba(30,52,16,0.8) 100%);
+    }
+    .team-info { padding: 1.5rem; }
+    .team-name {
+      font-family: 'Nunito', sans-serif; font-weight: 800;
+      font-size: 1.05rem; color: #FAF7F2; margin-bottom: 0.3rem;
+      line-height: 1.2;
+    }
+    .team-role {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em;
+      text-transform: uppercase; color: #7DC74A; margin-bottom: 0.75rem;
+    }
+    .team-bio {
+      font-size: 0.88rem; line-height: 1.6; color: rgba(244,237,224,0.6);
+    }
+
+    /* ─── Section: Download ─────────────────────────────────────── */
+    #download {
+      position: relative; z-index: 1;
+      padding: clamp(5rem, 10vw, 10rem) clamp(1.5rem, 5vw, 5rem);
+      background: #243D14;
+      text-align: center;
+      overflow: hidden;
+    }
+    #download::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(60,100,36,0.4) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .download-badge {
+      display: inline-block;
+      background: rgba(196,147,90,0.15);
+      border: 1px solid rgba(196,147,90,0.3);
+      color: #C4935A;
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 0.15em;
+      text-transform: uppercase; padding: 0.4rem 1rem; border-radius: 100px;
+      margin-bottom: 1.5rem;
+    }
+    .download-title {
+      font-family: 'Nunito', sans-serif; font-weight: 900;
+      font-size: clamp(2.2rem, 6vw, 4.5rem);
+      line-height: 1.05; letter-spacing: -0.03em; color: #FAF7F2;
+      margin-bottom: 1.25rem;
+    }
+    .download-title .highlight { color: #C4935A; }
+    .download-subtitle {
+      font-size: clamp(1rem, 2vw, 1.15rem); font-weight: 300;
+      color: rgba(244,237,224,0.55); max-width: 520px; margin: 0 auto 3rem;
+      line-height: 1.7;
+    }
+    .btn-download {
+      font-family: 'Nunito', sans-serif; font-weight: 900;
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      padding: 1.1rem 3rem; border-radius: 100px;
+      background: linear-gradient(135deg, #C4935A 0%, #D4A870 50%, #C4935A 100%);
+      background-size: 200% 100%;
+      color: #1A2E0D; font-size: 1.15rem;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(196,147,90,0.35), 0 0 0 0 rgba(196,147,90,0.4);
+      transition: background-position 0.4s, transform 0.2s, box-shadow 0.2s;
+      border: none; cursor: pointer;
+      animation: glow-pulse 3s ease-in-out infinite;
+    }
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 10px 30px rgba(196,147,90,0.35), 0 0 0 0 rgba(196,147,90,0.4); }
+      50%       { box-shadow: 0 10px 30px rgba(196,147,90,0.35), 0 0 0 14px rgba(196,147,90,0); }
+    }
+    .btn-download:hover {
+      background-position: right center;
+      transform: translateY(-4px);
+      box-shadow: 0 18px 40px rgba(196,147,90,0.5);
+      animation: none;
+    }
+    .btn-download svg { width: 22px; height: 22px; }
+
+    .download-meta {
+      margin-top: 1.75rem;
+      display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap;
+    }
+    .meta-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.85rem; color: rgba(244,237,224,0.4);
+    }
+    .meta-item span:first-child { color: #7DC74A; font-size: 1rem; }
+
+    /* ─── Footer ────────────────────────────────────────────────── */
+    footer {
+      background: #1A2E0D;
+      padding: 2.5rem clamp(1.5rem, 5vw, 5rem);
+      border-top: 1px solid rgba(124,199,74,0.08);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    footer .foot-brand {
+      font-family: 'Nunito', sans-serif; font-weight: 900;
+      font-size: 1.3rem; color: #A8E063; letter-spacing: -0.02em;
+    }
+    footer p {
+      font-size: 0.82rem; color: rgba(244,237,224,0.3);
+    }
+
+    /* ─── Utility: Reveal on scroll ─────────────────────────────── */
+  .reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  }
+
+  .reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+
+  /* ─── MOBILE FIX ─────────────────────────────── */
+
+ @media (max-width: 768px) {
+
+  #nav {
+    padding: 0.8rem 1rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  #nav > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem !important;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .nav-logo {
+    font-size: 2rem;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+  }
+
+  /* Hide top APK button on phones */
+  #nav .btn-primary {
+    display: none !important;
+  }
+
+}</style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       NAV
+  ═══════════════════════════════════════════ -->
+  <nav id="nav">
+    <span class="nav-logo">Daurin</span>
+    <div style="display:flex;gap:1.75rem;align-items:center;">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#team"     class="nav-link">Team</a>
+      <a href="#download" class="nav-link btn-primary" style="padding:0.5rem 1.35rem;font-size:0.88rem;font-family:'Nunito',sans-serif;font-weight:800;border-radius:100px;background:linear-gradient(135deg,#C4935A,#D4A870);color:#1A2E0D;text-decoration:none;">Download APK</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════
+       HERO
+  ═══════════════════════════════════════════ -->
+  <section id="hero">
+
+    <!-- Leaf particles (JS-generated) -->
+    <div id="particles" aria-hidden="true"></div>
+
+    <div id="hero-content">
+      <img
+        src="https://i.ibb.co.com/TDTZq5rW/logo-final-daurin.jpg"
+        alt="Daurin Logo"
+        class="hero-logo"
+        id="hero-logo"
+      />
+      <h1 class="hero-title" id="hero-title">Daurin</h1>
+      <p class="hero-tagline" id="hero-tagline">Recycle. Reuse. Rethink the marketplace.</p>
+      <div class="hero-cta" id="hero-cta">
+        <a href="#download" class="btn-primary">Download APK</a>
+        <a href="#features" class="btn-outline">Learn More</a>
+      </div>
+    </div>
+
+    <div class="scroll-indicator" id="scroll-hint">
+      <span>Scroll</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 5v14M5 12l7 7 7-7"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FEATURES
+  ═══════════════════════════════════════════ -->
+  <div class="wave-divider">
+    <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,0 L0,0 Z" fill="#243D14"/>
+      <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="#1E3410"/>
+    </svg>
+  </div>
+
+  <section id="features">
+    <div style="max-width:1100px;margin:0 auto;">
+      <div style="max-width:600px;" class="reveal">
+        <p class="section-label">Why Daurin?</p>
+        <h2 class="section-title">Marketplace that <span>gives back</span> to the planet</h2>
+        <p style="margin-top:1rem;font-size:1rem;line-height:1.75;color:rgba(244,237,224,0.6);">
+          Daurin connects eco-conscious buyers and sellers in a trusted platform
+          built around recycled and upcycled goods; making sustainable living effortless.
+        </p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:3.5rem;">
+
+        <div class="feature-card" data-delay="0">
+          <div class="feature-icon" style="background:rgba(124,199,74,0.15);">♻️</div>
+          <h3>Recycled Goods</h3>
+          <p>Browse thousands of verified recycled and upcycled products across every category imaginable.</p>
+        </div>
+
+        <div class="feature-card" data-delay="100">
+          <div class="feature-icon" style="background:rgba(196,147,90,0.15);">🌿</div>
+          <h3>Shop with Purpose</h3>
+          <p>Every item you buy automatically contributes to verified environmental causes, helping us save the planet, one purchase at a time.</p>
+        </div>
+
+        <div class="feature-card" data-delay="200">
+          <div class="feature-icon" style="background:rgba(124,199,74,0.15);">🤝</div>
+          <h3>Trusted Community</h3>
+          <p>Verified sellers, peer reviews, and a community committed to sustainable trading.</p>
+        </div>
+
+        <div class="feature-card" data-delay="300">
+          <div class="feature-icon" style="background:rgba(196,147,90,0.15);">📦</div>
+          <h3>Zero-Waste Shipping</h3>
+          <p>Matched with eco-packaging partners to keep your delivery footprint as small as possible.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       TEAM
+  ═══════════════════════════════════════════ -->
+  <section id="team">
+    <div style="max-width:1100px;margin:0 auto;">
+
+      <div class="reveal" style="text-align:center;">
+        <p class="section-label">The People Behind It</p>
+        <h2 class="section-title">Meet the <span style="color:#C4935A;">Team</span></h2>
+        <p style="margin-top:1rem;font-size:1rem;line-height:1.75;color:rgba(244,237,224,0.55);max-width:500px;margin-left:auto;margin-right:auto;">
+          A passionate group of developers and designers united by a shared vision for a greener future.
+        </p>
+      </div>
+
+      <div class="team-grid">
+
+        <!-- Member 1 -->
+        <div class="team-card" data-delay="0">
+          <div class="team-photo-wrap">
+            <span class="initials">JL</span>
+          </div>
+          <div class="team-info">
+            <p class="team-name">Jason Leonardi<br>Wijaya Hendra</p>
+            <p class="team-role">UI/UX Designer</p>
+            <p class="team-bio">insert text -member1 bio.</p>
+          </div>
+        </div>
+
+        <!-- Member 2 -->
+        <div class="team-card" data-delay="120">
+          <div class="team-photo-wrap">
+            <span class="initials">TW</span>
+          </div>
+          <div class="team-info">
+            <p class="team-name">Theodorus Wilson<br>Wirahadisaputra</p>
+            <p class="team-role">UI/UX Designer</p>
+            <p class="team-bio">insert text -member2 bio.</p>
+          </div>
+        </div>
+
+        <!-- Member 3 -->
+        <div class="team-card" data-delay="240">
+          <div class="team-photo-wrap">
+            <span class="initials">M3</span>
+          </div>
+          <div class="team-info">
+            <p class="team-name">Cristian<br>Philander</p>
+            <p class="team-role">Backend Engineer</p>
+            <p class="team-bio">insert text -member3 bio.</p>
+          </div>
+        </div>
+
+        <!-- Member 4 -->
+        <div class="team-card" data-delay="360">
+          <div class="team-photo-wrap">
+            <span class="initials">M4</span>
+          </div>
+          <div class="team-info">
+            <p class="team-name">Kenzie Arly<br>Siswantoro</p>
+            <p class="team-role">Product Manager</p>
+            <p class="team-bio">insert text -member4 bio.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       DOWNLOAD
+  ═══════════════════════════════════════════ -->
+  <div class="wave-divider" style="transform:rotate(180deg);">
+    <svg viewBox="0 0 1440 80" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+      <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,0 L0,0 Z" fill="#1E3410"/>
+      <path d="M0,40 C240,80 480,0 720,40 C960,80 1200,0 1440,40 L1440,80 L0,80 Z" fill="#243D14"/>
+    </svg>
+  </div>
+
+  <section id="download">
+    <div style="position:relative;z-index:1;max-width:700px;margin:0 auto;" class="reveal">
+      <span class="download-badge">Now Available</span>
+      <h2 class="download-title">
+        Start trading<br>
+        <span class="highlight">sustainably today.</span>
+      </h2>
+      <p class="download-subtitle">
+        Join thousands of eco-conscious Indonesians already buying and selling
+        recycled goods on Daurin. One download, infinite impact.
+      </p>
+
+      <a href="downloads/daurin.apk" class="btn-download" id="apk-btn" download="daurin.apk">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Download APK
+      </a>
+
+      <div class="download-meta">
+        <div class="meta-item"><span>✓</span> Free to download</div>
+        <div class="meta-item"><span>✓</span> Android 8.0+</div>
+        <div class="meta-item"><span>✓</span> No ads, ever</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
+  <footer>
+    <span class="foot-brand">Daurin</span>
+    <p>© 2026 Daurin. All rights reserved.</p>
+    <p style="font-size:0.82rem;color:rgba(244,237,224,0.3);">Made with 🌿 for the planet</p>
+  </footer>
+
+
+  <!-- ═══════════════════════════════════════════
+       SCRIPTS
+  ═══════════════════════════════════════════ -->
+  <script>
+    // ─── Register ScrollTrigger ───────────────────────────────────
+    gsap.registerPlugin(ScrollTrigger);
+
+    // ─── Leaf particles ───────────────────────────────────────────
+    const colors = ['#7DC74A','#A8E063','#527D37','#C4935A','#D4B896'];
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 22; i++) {
+      const leaf = document.createElement('div');
+      leaf.className = 'leaf';
+      leaf.style.cssText = `
+        left: ${Math.random() * 100}%;
+        width: ${6 + Math.random() * 10}px;
+        height: ${6 + Math.random() * 10}px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        animation-duration: ${10 + Math.random() * 20}s;
+        animation-delay: ${Math.random() * 15}s;
+        border-radius: ${Math.random() > 0.5 ? '50% 0' : '50%'};
+        opacity: 0;
+      `;
+      container.appendChild(leaf);
+    }
+
+    // ─── Hero: GSAP scroll fade ───────────────────────────────────
+    const heroItems = ['#hero-logo', '#hero-title', '#hero-tagline', '#hero-cta', '#scroll-hint'];
+    gsap.to(heroItems, {
+      opacity: 0,
+      y: -40,
+      stagger: 0.06,
+      ease: 'power2.in',
+      scrollTrigger: {
+        trigger: '#hero',
+        start: 'top top',
+        end: '+=420',
+        scrub: 1.2,
+      }
+    });
+
+    // Hero background parallax
+    gsap.to('#hero', {
+      backgroundPositionY: '30%',
+      ease: 'none',
+      scrollTrigger: {
+        trigger: '#hero',
+        start: 'top top',
+        end: 'bottom top',
+        scrub: true,
+      }
+    });
+
+    // ─── Nav scroll effect ────────────────────────────────────────
+    const nav = document.getElementById('nav');
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 60);
+    }, { passive: true });
+
+    // ─── Generic reveal on scroll (Intersection Observer) ─────────
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ─── Feature cards staggered reveal ──────────────────────────
+    const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = parseInt(entry.target.dataset.delay || 0);
+          setTimeout(() => entry.target.classList.add('visible'), delay);
+          cardObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.feature-card, .team-card').forEach(el => cardObserver.observe(el));
+
+    // ─── APK button click feedback ────────────────────────────────
+    document.getElementById('apk-btn').addEventListener('click', function() {
+      const original = this.innerHTML;
+      this.textContent = '✓ Download dimulai…';
+      this.style.background = 'linear-gradient(135deg,#7DC74A,#A8E063)';
+      this.style.color = '#1A2E0D';
+      setTimeout(() => {
+        this.innerHTML = original;
+        this.style.background = '';
+        this.style.color = '';
+      }, 2500);
+    });
+  </script>
+</body>
+</html>
