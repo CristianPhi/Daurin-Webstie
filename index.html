@@ -635,7 +635,7 @@
         recycled goods on Daurin. One download, infinite impact.
       </p>
 
-      <a href="downloads/daurin.apk" class="btn-download" id="apk-btn" target="_blank" rel="noopener">
+      <a href="daurin.apk" class="btn-download" id="apk-btn" download="daurin.apk">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
@@ -746,12 +746,8 @@
 
     document.querySelectorAll('.feature-card, .team-card').forEach(el => cardObserver.observe(el));
 
-    // ─── APK link: lokal pakai file relatif, live pakai GitHub Releases ─
+    // ─── APK download feedback ─────────────────────────────────
     const apkBtn = document.getElementById('apk-btn');
-    const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
-    if (!isLocal) {
-      apkBtn.href = 'https://github.com/CristianPhi/Daurin-Webstie/releases/latest/download/daurin.apk';
-    }
 
     // ─── APK button click feedback ────────────────────────────────
     apkBtn.addEventListener('click', function() {
